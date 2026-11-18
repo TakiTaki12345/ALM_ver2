@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from alm.core.cashflow import CashFlow
@@ -8,16 +7,7 @@ from alm.core.risk import (
     effective_duration,
     macaulay_duration,
     modified_duration,
-    present_value_at_yield,
 )
-
-
-def test_pv_at_yield_matches_formula():
-    # PV at a flat yield follows sum of CF_i * exp(-y * t_i).
-    cf = CashFlow(times=[1, 2], amounts=[100, 100])
-    y = 0.05
-    expected = 100 * np.exp(-0.05 * 1) + 100 * np.exp(-0.05 * 2)
-    assert present_value_at_yield(cf, y) == pytest.approx(expected, rel=1e-12)
 
 
 def test_zero_coupon_duration_equals_maturity():
@@ -66,9 +56,9 @@ def test_duration_via_numerical_derivative():
     cf = CashFlow(times=[1, 2, 3], amounts=[5, 5, 105])
     y = 0.04
     h = 1e-6
-    pv_up = present_value_at_yield(cf, y + h)
-    pv_down = present_value_at_yield(cf, y - h)
-    pv = present_value_at_yield(cf, y)
+    pv_up = cf.present_value(YieldCurve(tenors=[1, 2], rates=[y + h, y + h]))
+    pv_down = cf.present_value(YieldCurve(tenors=[1, 2], rates=[y - h, y - h]))
+    pv = cf.present_value(YieldCurve(tenors=[1, 2], rates=[y, y]))
     numerical_dmod = -(pv_up - pv_down) / (2 * h) / pv
     assert modified_duration(cf, y) == pytest.approx(numerical_dmod, rel=1e-6)
 
@@ -78,9 +68,9 @@ def test_convexity_via_numerical_second_derivative():
     cf = CashFlow(times=[1, 2, 3], amounts=[5, 5, 105])
     y = 0.04
     h = 1e-4
-    pv_up = present_value_at_yield(cf, y + h)
-    pv_down = present_value_at_yield(cf, y - h)
-    pv = present_value_at_yield(cf, y)
+    pv_up = cf.present_value(YieldCurve(tenors=[1, 2], rates=[y + h, y + h]))
+    pv_down = cf.present_value(YieldCurve(tenors=[1, 2], rates=[y - h, y - h]))
+    pv = cf.present_value(YieldCurve(tenors=[1, 2], rates=[y, y]))
     numerical_conv = (pv_up - 2 * pv + pv_down) / (h**2) / pv
     assert convexity(cf, y) == pytest.approx(numerical_conv, rel=1e-4)
 

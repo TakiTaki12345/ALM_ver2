@@ -3,13 +3,6 @@ import numpy as np
 from alm.core.cashflow import CashFlow
 
 
-def present_value_at_yield(cashflow: CashFlow, y: float) -> float:
-    # PV(y) = sum_i CF_i * exp(-y * t_i)
-    t = cashflow.times
-    cf = cashflow.amounts
-    return float(np.sum(cf * np.exp(-y * t)))
-
-
 def macaulay_duration(cashflow: CashFlow, y: float) -> float:
     # D_mac = sum_i t_i * (CF_i * exp(-y * t_i)) / PV
     t = cashflow.times
