@@ -98,3 +98,29 @@ def test_forward_rate_rejects_non_increasing_interval():
         curve.forward_rate(5, 5)
     with pytest.raises(ValueError):
         curve.forward_rate(5, 3)
+
+
+def test_shift_parallel():
+    curve = YieldCurve(tenors=[1, 5], rates=[0.02, 0.03])
+    # +100bp = +0.01 at every tenor.
+    shifted = curve.shift(100)
+    assert shifted.rates == pytest.approx([0.03, 0.04], abs=1e-9)
+
+
+def test_shift_by_tenor():
+    curve = YieldCurve(tenors=[1, 5], rates=[0.02, 0.03])
+    # +50bp at 1y, -25bp at 5y.
+    shifted = curve.shift([50, -25])
+    assert shifted.rates == pytest.approx([0.025, 0.0275], abs=1e-9)
+
+
+def test_shift_leaves_original_unchanged():
+    curve = YieldCurve(tenors=[1, 5], rates=[0.02, 0.03])
+    curve.shift(100)
+    assert curve.rates == pytest.approx([0.02, 0.03], abs=1e-9)
+
+
+def test_shift_rejects_mismatched_length():
+    curve = YieldCurve(tenors=[1, 5], rates=[0.02, 0.03])
+    with pytest.raises(ValueError):
+        curve.shift([10, 20, 30])

@@ -36,3 +36,10 @@ class YieldCurve:
         r1 = self.zero_rate(t1)
         r2 = self.zero_rate(t2)
         return (r2 * t2 - r1 * t1) / (t2 - t1)
+
+    def shift(self, shocks_bp):
+        # curve = YieldCurve(tenors=[1, 5], rates=[0.02, 0.03])
+        # curve.shift(100)       → rates [0.03, 0.04]    (parallel +100bp)
+        # curve.shift([50, -25]) → rates [0.025, 0.0275] (one bp per tenor)
+        shocks = np.asarray(shocks_bp, dtype=float) / 10000
+        return YieldCurve(self.tenors, self.rates + shocks)
